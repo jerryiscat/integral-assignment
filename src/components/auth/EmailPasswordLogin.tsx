@@ -1,72 +1,104 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Alert, StyleSheet, View, Text } from 'react-native';
 import { supabase } from '../../../lib/supabase';
 import { Button, Input } from '@rneui/themed';
-import { useNavigation } from '@react-navigation/native';
 
-interface EmailPasswordLoginProps {
-  isSignUp: boolean;
-  setIsSignUp: (value: boolean) => void; // To toggle between sign-in and sign-up
-}
-
-export default function EmailPasswordLogin({ isSignUp, setIsSignUp }: EmailPasswordLoginProps) {
-  const navigation = useNavigation(); // For navigation
+export default function EmailPasswordLogin({ isSignUp }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Handle deep link verification and redirect to sign-in page
-  useEffect(() => {
-    const handleAuthStateChange = async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        console.log('User signed in:', session.user);
+  // Function to get email by username
+  const getEmailByUsername = async (username) => {
+    const { data, error } = await supabase
+      .from('profiles') // Correct reference to 'profiles' table in the public schema
+      .select('email')
+      .eq('username', username); // Fetch by username
 
-        // Redirect to sign-in page after verification
-        setIsSignUp(false);
-      }
-    };
+    if (error) {
+      console.error('Error fetching email by username:', error.message);
+      return null;
+    }
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(handleAuthStateChange);
+    if (data.length === 0) {
+      // No rows found for the username
+      console.error('No user found with that username');
+      return null;
+    }
 
-    return () => {
-      authListener?.subscription?.unsubscribe();
-    };
-  }, []);
+    if (data.length > 1) {
+      // Multiple rows found (this shouldn't happen if usernames are unique)
+      console.error('Multiple users found with the same username');
+      return null;
+    }
 
-  // Sign In: Supports email or username
-  async function signInWithEmail() {
+    return data[0].email; // Return email if found
+  };
+
+  // Sign in with email or username and password
+  async function signInWithEmailOrUsername() {
     setLoading(true);
+    let loginEmail = email.trim();
 
-    let loginIdentifier = email.trim();
+    // If username is entered, fetch the associated email
+    if (!loginEmail && username.trim()) {
+      loginEmail = await getEmailByUsername(username.trim());
+    }
 
-    // Attempt to sign in
+    // If no valid email found, show error
+    if (!loginEmail) {
+      Alert.alert('Error', 'No account found with that username or email');
+      setLoading(false);
+      return;
+    }
+
+    // Attempt to sign in with the email and password
     const { error } = await supabase.auth.signInWithPassword({
-      email: loginIdentifier,
+      email: loginEmail,
       password: password,
     });
 
     if (error) {
       Alert.alert('Error', error.message);
-    } else {
-      navigation.navigate('Post'); // Navigate to post screen after login
     }
 
     setLoading(false);
   }
 
-  // Sign Up: Requires email and password
+  // Sign up with email, username, and password
   async function signUpWithEmail() {
     setLoading(true);
 
-    // Sign up user in Supabase Auth
-    const { error } = await supabase.auth.signUp(
+    // Check if username already exists in the profiles table
+    const { data: existingProfiles, error: profileError } = await supabase
+      .from('profiles') // Correct reference to 'profiles' table in the public schema
+      .select('username')
+      .eq('username', username);
+
+    if (profileError) {
+      Alert.alert('Error', profileError.message);
+      setLoading(false);
+      return;
+    }
+
+    if (existingProfiles.length > 0) {
+      Alert.alert('Error', 'Username already taken');
+      setLoading(false);
+      return;
+    }
+
+    // Sign up the user in Supabase authentication
+    const { data, error } = await supabase.auth.signUp(
       {
         email: email,
-        password: password, // Ensures password is required
+        password: password,
+        options: {
+          data: {
+            username: username,
+          },
+        },
       },
-      {
-        emailRedirectTo: 'exp://192.168.1.100:8081', // Replace with your Expo IP
-      }
     );
 
     if (error) {
@@ -81,8 +113,6 @@ export default function EmailPasswordLogin({ isSignUp, setIsSignUp }: EmailPassw
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerTitle}>{isSignUp ? 'Sign Up' : 'Sign In'}</Text>
-
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Input
           label="Email"
@@ -93,6 +123,19 @@ export default function EmailPasswordLogin({ isSignUp, setIsSignUp }: EmailPassw
           autoCapitalize="none"
         />
       </View>
+
+      {isSignUp && (
+        <View style={styles.verticallySpaced}>
+          <Input
+            label="Username"
+            leftIcon={{ type: 'font-awesome', name: 'user' }}
+            onChangeText={setUsername}
+            value={username}
+            placeholder="Choose a username"
+            autoCapitalize="none"
+          />
+        </View>
+      )}
 
       {/* Common Password Input */}
       <View style={styles.verticallySpaced}>
@@ -110,9 +153,17 @@ export default function EmailPasswordLogin({ isSignUp, setIsSignUp }: EmailPassw
       {/* Sign Up / Sign In Button */}
       <View style={[styles.verticallySpaced, styles.mt20]}>
         {isSignUp ? (
-          <Button title="Sign up" disabled={loading || !email.trim() || !password.trim()} onPress={signUpWithEmail} />
+          <Button
+            title="Sign up"
+            disabled={loading || !email.trim() || !password.trim() || !username.trim()}
+            onPress={signUpWithEmail}
+          />
         ) : (
-          <Button title="Sign in" disabled={loading || !email.trim() || !password.trim()} onPress={signInWithEmail} />
+          <Button
+            title="Sign in"
+            disabled={loading || (!email.trim() && !username.trim()) || !password.trim()}
+            onPress={signInWithEmailOrUsername}
+          />
         )}
       </View>
     </View>

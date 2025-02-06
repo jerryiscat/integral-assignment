@@ -1,6 +1,5 @@
-// src/components/MessageList.tsx
-import React, { useEffect, useState } from 'react';
-import { FlatList, View, Text, StyleSheet, TouchableOpacity, Alert} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { FlatList, View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 
@@ -9,15 +8,11 @@ export default function MessageList() {
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    // Fetch messages joined with the profiles table to get the user's email.
+    // Fetch messages with user_id and content
     const fetchMessages = async () => {
       const { data, error } = await supabase
         .from('messages')
-        .select(`
-          id,
-          content,
-          user_id
-        `)
+        .select('id, content, user_id')
         .order('created_at', { ascending: true });
       if (error) {
         console.error('Error fetching messages:', error.message);
@@ -28,7 +23,7 @@ export default function MessageList() {
 
     fetchMessages();
 
-    // Subscribe to real-time updates.
+    // Subscribe to real-time updates for messages
     const subscription = supabase
       .channel('messages')
       .on(
@@ -38,7 +33,6 @@ export default function MessageList() {
           if (payload.eventType === 'INSERT') {
             setMessages((prev) => [...prev, payload.new]);
           }
-          // Optionally, support UPDATE or DELETE events.
         }
       )
       .subscribe();
@@ -70,14 +64,34 @@ export default function MessageList() {
     );
   };
 
+  const getUsernameByUserId = async (userId) => {
+    const { data, error } = await supabase
+      .from('profiles') 
+      .select('username')
+      .eq('id', userId)
+      .single(); 
+    
+    if (error) {
+      console.error('Error fetching username:', error);
+    } else {
+      console.log('Username:', data.username);
+    }
+
+    return data ? data.username : 'Unknown User'; 
+  };
 
   const renderItem = ({ item }) => {
     const canDelete = user && item.user_id === user.id;
 
+    console.log(item.user_id)
+
+    // Fetch the username for the message
+    const username = getUsernameByUserId(item.user_id);
+
     return (
       <View style={styles.messageItem}>
         <Text style={styles.emailText}>
-        {item.user_id || 'Unknown User'}
+          {username}
         </Text>
         <Text style={styles.messageText}>{item.content}</Text>
         {canDelete && (
@@ -88,7 +102,6 @@ export default function MessageList() {
       </View>
     );
   };
-
 
   return (
     <FlatList
