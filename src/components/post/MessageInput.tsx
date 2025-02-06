@@ -1,8 +1,8 @@
 // src/components/MessageInput.tsx
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet } from 'react-native';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../context/AuthContext';
+import { supabase } from '../../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 
 export default function MessageInput() {
   const { user } = useAuth();

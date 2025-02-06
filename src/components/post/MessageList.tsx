@@ -1,8 +1,8 @@
 // src/components/MessageList.tsx
 import React, { useEffect, useState } from 'react';
 import { FlatList, View, Text, StyleSheet, TouchableOpacity, Alert} from 'react-native';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../context/AuthContext';
+import { supabase } from '../../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 
 export default function MessageList() {
   const { user } = useAuth();

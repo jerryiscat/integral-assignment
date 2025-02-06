@@ -1,24 +1,23 @@
 // src/screens/LoginScreen.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import Header from '../components/Header';
-import EmailPasswordLogin from '../components/EmailPasswordLogin';
-import MagicLinkLogin from '../components/MagicLinkLogin';
-import GoogleLogin from '../components/GoogleLogin';
+import Header from '../components/common/Header';
+import EmailPasswordLogin from '../components/auth/EmailPasswordLogin';
+import MagicLinkLogin from '../components/auth/MagicLinkLogin';
+import GoogleLogin from '../components/auth/GoogleLogin';
+import { Linking } from 'react-native';
 
 export default function LoginScreen() {
-  // Modes: 'signup' or 'signin'
-  const [mode, setMode] = useState<'signup' | 'signin'>('signup');
+  const [mode, setMode] = useState<'Sign Up' | 'Sign In'>('Sign Up');
 
   return (
     <View style={styles.container}>
-      <Header title="Login" showBackButton={false} />
+      <Header title={mode} showBackButton={false} />
       
-      {mode === 'signup' && (
+      {mode === 'Sign Up' && (
         <>
-          {/* Sign Up Form */}
           <EmailPasswordLogin isSignUp={true} />
-          <TouchableOpacity onPress={() => setMode('signin')}>
+          <TouchableOpacity onPress={() => setMode('Sign In')}>
             <Text style={styles.toggleText}>Already have an account? Sign in</Text>
           </TouchableOpacity>
           <View style={styles.alternativeContainer}>
@@ -29,19 +28,18 @@ export default function LoginScreen() {
         </>
       )}
 
-      {mode === 'signin' && (
+      {mode === 'Sign In' && (
         <>
-          {/* Sign In Form */}
           <EmailPasswordLogin isSignUp={false} />
-          {/* Alternative Sign In Methods */}
+          <TouchableOpacity onPress={() => setMode('Sign Up')}>
+            <Text style={styles.toggleText}>Don't have an account? Sign up</Text>
+          </TouchableOpacity>
           <View style={styles.alternativeContainer}>
             <Text style={styles.altTitle}>Or use another login method:</Text>
             <MagicLinkLogin buttonTitle="Login with Email" />
             <GoogleLogin buttonTitle="Login with Google" />
           </View>
-          <TouchableOpacity onPress={() => setMode('signup')}>
-            <Text style={styles.toggleText}>Don't have an account? Sign up</Text>
-          </TouchableOpacity>
+          
         </>
       )}
     </View>

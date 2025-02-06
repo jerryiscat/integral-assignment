@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { Button } from '@rneui/themed';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import { Ionicons } from '@expo/vector-icons';

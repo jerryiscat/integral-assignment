@@ -1,7 +1,7 @@
 // src/components/MagicLinkLogin.tsx
 import React, { useState } from 'react';
 import { Alert, StyleSheet, View, Text, Platform } from 'react-native';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import { Button } from '@rneui/themed';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -18,9 +18,6 @@ export default function MagicLinkLogin({ buttonTitle = "Login with Email" }: Mag
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: {
-        emailRedirectTo: 'myapp://post', // Ensure deep linking is configured in your app
-      },
     });
     if (error) {
       Alert.alert('Error', error.message);
@@ -30,7 +27,6 @@ export default function MagicLinkLogin({ buttonTitle = "Login with Email" }: Mag
     setLoading(false);
   };
 
-  // When the button is pressed, prompt the user to enter their email (iOS only)
   const promptForEmail = () => {
     if (Platform.OS === 'ios') {
       Alert.prompt(
@@ -52,7 +48,6 @@ export default function MagicLinkLogin({ buttonTitle = "Login with Email" }: Mag
         "plain-text"
       );
     } else {
-      // For Android, you might implement a custom modal. For now, we simply alert.
       Alert.alert("Not Supported", "This feature is only supported on iOS for now.");
     }
   };
