@@ -9,12 +9,11 @@ export default function EmailPasswordLogin({ isSignUp }) {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Function to get email by username
   const getEmailByUsername = async (username) => {
     const { data, error } = await supabase
-      .from('profiles') // Correct reference to 'profiles' table in the public schema
+      .from('profiles') 
       .select('email')
-      .eq('username', username); // Fetch by username
+      .eq('username', username); 
 
     if (error) {
       console.error('Error fetching email by username:', error.message);
@@ -22,38 +21,33 @@ export default function EmailPasswordLogin({ isSignUp }) {
     }
 
     if (data.length === 0) {
-      // No rows found for the username
       console.error('No user found with that username');
       return null;
     }
 
     if (data.length > 1) {
-      // Multiple rows found (this shouldn't happen if usernames are unique)
       console.error('Multiple users found with the same username');
       return null;
     }
 
-    return data[0].email; // Return email if found
+    return data[0].email; 
   };
 
-  // Sign in with email or username and password
+
   async function signInWithEmailOrUsername() {
     setLoading(true);
     let loginEmail = email.trim();
 
-    // If username is entered, fetch the associated email
     if (!loginEmail && username.trim()) {
       loginEmail = await getEmailByUsername(username.trim());
     }
 
-    // If no valid email found, show error
     if (!loginEmail) {
       Alert.alert('Error', 'No account found with that username or email');
       setLoading(false);
       return;
     }
 
-    // Attempt to sign in with the email and password
     const { error } = await supabase.auth.signInWithPassword({
       email: loginEmail,
       password: password,
@@ -66,13 +60,11 @@ export default function EmailPasswordLogin({ isSignUp }) {
     setLoading(false);
   }
 
-  // Sign up with email, username, and password
   async function signUpWithEmail() {
     setLoading(true);
 
-    // Check if username already exists in the profiles table
     const { data: existingProfiles, error: profileError } = await supabase
-      .from('profiles') // Correct reference to 'profiles' table in the public schema
+      .from('profiles') 
       .select('username')
       .eq('username', username);
 
@@ -88,7 +80,6 @@ export default function EmailPasswordLogin({ isSignUp }) {
       return;
     }
 
-    // Sign up the user in Supabase authentication
     const { data, error } = await supabase.auth.signUp(
       {
         email: email,
@@ -137,7 +128,6 @@ export default function EmailPasswordLogin({ isSignUp }) {
         </View>
       )}
 
-      {/* Common Password Input */}
       <View style={styles.verticallySpaced}>
         <Input
           label="Password"
@@ -150,7 +140,6 @@ export default function EmailPasswordLogin({ isSignUp }) {
         />
       </View>
 
-      {/* Sign Up / Sign In Button */}
       <View style={[styles.verticallySpaced, styles.mt20]}>
         {isSignUp ? (
           <Button
@@ -170,7 +159,6 @@ export default function EmailPasswordLogin({ isSignUp }) {
   );
 }
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,

@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
 
-WebBrowser.maybeCompleteAuthSession(); // Ensures the auth session closes properly
+WebBrowser.maybeCompleteAuthSession();
 
 const GOOGLE_CLIENT_ID = "1037736986312-rrgsb8846u6v4a35jomdqat7dmjnvvsl.apps.googleusercontent.com"; 
 

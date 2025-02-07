@@ -6,12 +6,19 @@ import MessageList from '../components/post/MessageList';
 import MessageInput from '../components/post/MessageInput';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { useRoute } from "@react-navigation/native";
 
 export default function PostScreen({ }) {
-  const { user } = useAuth();
+  const route = useRoute();
+  const user = route.params?.user;
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+      console.log('User logged out successfully');
+    } catch (error) {
+      console.error('Error logging out:', error.message);
+    }
   };
 
   return (
