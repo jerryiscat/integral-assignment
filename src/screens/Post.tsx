@@ -5,7 +5,6 @@ import Header from '../components/common/Header';
 import MessageList from '../components/post/MessageList';
 import MessageInput from '../components/post/MessageInput';
 import { supabase } from '../../lib/supabase';
-import { useAuth } from '../context/AuthContext';
 import { useRoute } from "@react-navigation/native";
 
 export default function PostScreen({ }) {
@@ -25,11 +24,14 @@ export default function PostScreen({ }) {
     <View style={styles.container}>
       <Header title="Post" showBackButton={false} />
 
-      {user && <View style={styles.logoutContainer}>
-        <Text style={styles.userText}> Username: {user.user_metadata.username}</Text>
-        <Text style={styles.userText}> Email: {user.email}</Text>
-        <Button title="Logout" onPress={handleLogout} color="#ff5c5c" />
-      </View>}
+      {user && user.user_metadata ? (
+        <View style={styles.logoutContainer}>
+          <Text style={styles.userText}> Username: {user.user_metadata.username}</Text>
+          <Text style={styles.userText}> Email: {user.email}</Text>
+          <Button title="Logout" onPress={handleLogout} color="#ff5c5c" />
+        </View>
+      ) : null}
+
       
       <View style={styles.messageContainer}>
         <MessageList />

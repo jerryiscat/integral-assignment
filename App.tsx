@@ -30,6 +30,7 @@ function AuthNavigator() {
     });
   }, [checkAuth]);
 
+
   if (loading) {
     console.log("Still loading...");
     return (
@@ -38,8 +39,7 @@ function AuthNavigator() {
       </View>
     );
   }
-
-  console.log("User state updated -", user ? "Logged in" : "Not logged in");
+  // console.log("User state updated -", user ? "Logged in" : "Not logged in");
 
   return (
     <Stack.Navigator>
@@ -60,7 +60,7 @@ function AuthNavigator() {
 export default function App() {
   return (
     <NavigationContainer linking={linking}>
-      <AuthProvider>  {/* ✅ Move AuthProvider INSIDE NavigationContainer */}
+      <AuthProvider>
         <AuthNavigator />
       </AuthProvider>
     </NavigationContainer>

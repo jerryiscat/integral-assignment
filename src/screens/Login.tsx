@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import Header from "../components/common/Header";
 import EmailPasswordLogin from "../components/auth/EmailPasswordLogin";
-import OAuth from "../components/auth/OAuth"; // ✅ Import the merged OAuth component
+import OAuth from "../components/auth/OAuth";
 
 export default function LoginScreen() {
   const [mode, setMode] = useState<"Sign Up" | "Sign In">("Sign Up");
@@ -19,7 +19,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
           <View style={styles.alternativeContainer}>
             <Text style={styles.altTitle}>Or use another login method:</Text>
-            <OAuth /> {/* ✅ Replaces MagicLinkLogin & GoogleLogin */}
+            <OAuth />
           </View>
         </>
       )}
@@ -32,7 +32,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
           <View style={styles.alternativeContainer}>
             <Text style={styles.altTitle}>Or use another login method:</Text>
-            <OAuth /> {/* ✅ Replaces MagicLinkLogin & GoogleLogin */}
+            <OAuth />
           </View>
         </>
       )}

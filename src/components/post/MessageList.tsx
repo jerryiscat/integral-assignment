@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 export default function MessageList() {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
-  const [usernames, setUsernames] = useState({}); // Store user_id → username mapping
+  const [usernames, setUsernames] = useState({});
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -25,13 +25,13 @@ export default function MessageList() {
 
     fetchMessages();
 
-    // Subscribe to real-time message updates
+    // real-time message updates
     const subscription = supabase
       .channel("messages")
       .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, (payload) => {
         if (payload.eventType === "INSERT") {
           setMessages((prev) => [...prev, payload.new]);
-          fetchUsernames([payload.new]); // Fetch the new username if needed
+          fetchUsernames([payload.new]);
         } else if (payload.eventType === "DELETE") {
           setMessages((prev) => prev.filter((m) => m.id !== payload.old.id));
         }
@@ -56,7 +56,6 @@ export default function MessageList() {
       return;
     }
 
-    // Update the username mapping
     const newUsernames = {};
     data.forEach((user) => {
       newUsernames[user.id] = user.username;

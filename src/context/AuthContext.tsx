@@ -11,7 +11,6 @@ const AuthContext = createContext({
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const redirectTo = AuthSession.makeRedirectUri({ scheme: "com.myapp" });
 
   const checkAuth = async () => {
     // console.log("Checking authentication...");
@@ -28,22 +27,36 @@ export function AuthProvider({ children }) {
       // console.log("User found:", sessionData.session.user.email);
       setUser(sessionData.session.user);
     } else {
-      console.log("No user session found.");
+      // console.log("No user session found.");
       setUser(null);
     }
   };
 
   const handleDeepLink = async (url) => {
     if (!url) return;
-    // console.log("Handling deep link:", url);
+    console.log("Handling deep link:", url);
   
-    const { path, queryParams } = Linking.parse(url);
-    const { access_token, refresh_token } = queryParams;
+    // const { path, queryParams } = Linking.parse(url);
+    // const { access_token, refresh_token } = queryParams;
   
-    if (!access_token) {
-      console.log("No access token found in deep link.");
+    // if (!access_token) {
+    //   console.log("No access token found in deep link.");
+    //   return;
+    // }
+    const fragment = url.split("#")[1];
+    if (!fragment) {
+      console.log("No fragment found in the URL.");
       return;
     }
+    const params = new URLSearchParams(fragment); 
+    const access_token = params.get("access_token");
+    const refresh_token = params.get("refresh_token");
+  
+    if (!access_token || !refresh_token) {
+      console.log("Access token or refresh token missing from the URL.");
+      return;
+    }
+  
   
     // console.log("Deep Link Tokens:", { access_token, refresh_token });
   
@@ -61,15 +74,20 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     checkAuth();
 
-    // ✅ Listen for deep link redirects (Correct way)
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser(session.user); 
+      } else {
+        setUser(null); 
+      }
+    });
+
     const subscription = Linking.addEventListener("url", ({ url }) => handleDeepLink(url));
 
-    // ✅ Handle deep link if app was opened via a link
     Linking.getInitialURL().then((url) => {
       if (url) handleDeepLink(url);
     });
 
-    // ✅ Recheck auth when app resumes from the background
     const handleAppStateChange = (nextAppState) => {
       if (nextAppState === "active") {
         console.log("App resumed, checking auth...");
@@ -79,7 +97,7 @@ export function AuthProvider({ children }) {
     const appStateListener = AppState.addEventListener("change", handleAppStateChange);
 
     return () => {
-      subscription.remove(); // ✅ Correct way to remove event listener
+      subscription.remove();
       appStateListener.remove();
     };
   }, []);

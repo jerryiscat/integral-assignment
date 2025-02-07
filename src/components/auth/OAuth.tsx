@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Alert, StyleSheet, View, Platform } from "react-native";
 import { Button } from "@rneui/themed";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,18 +13,32 @@ const createSessionFromUrl = async (url: string) => {
   if (!url) return;
 //   console.log("Handling deep link:", url);
 
-  const fragment = url.split("#")[1];  
+  const fragment = url.split("#")[1];
+  if (!fragment) {
+    console.log("No fragment found in the URL.");
+    return;
+  }
+
   const params = new URLSearchParams(fragment); 
   const access_token = params.get("access_token");
   const refresh_token = params.get("refresh_token");
 
-  const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
+  if (!access_token || !refresh_token) {
+    console.log("Access token or refresh token missing from the URL.");
+    return;
+  }
 
-  if (error) {
-    console.error("Error setting session:", error.message);
-  } else {
-    // console.log("User authenticated via deep link:", data.user.email);
-    return data.user;
+  try {
+    const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
+
+    if (error) {
+      console.error("Error setting session:", error.message);
+    } else {
+    //   console.log("User authenticated via deep link:", data.user);
+      return data.user;
+    }
+  } catch (error) {
+    console.error("Error during session setup:", error.message);
   }
 };
 
@@ -41,14 +55,16 @@ const performGoogleOAuth = async () => {
     if (error) throw error;
 
     const res = await WebBrowser.openAuthSessionAsync(data?.url ?? "", redirectTo);
+
     if (res.type === "success") {
       await createSessionFromUrl(res.url);
+    } else {
+      console.log("OAuth flow was not successful.");
     }
   } catch (err) {
     Alert.alert("Google Login Error", err.message);
   }
 };
-
 
 const sendMagicLinkWithEmail = async (email: string) => {
   if (!email.trim()) {
@@ -70,7 +86,6 @@ const sendMagicLinkWithEmail = async (email: string) => {
     Alert.alert("Magic Link Error", err.message);
   }
 };
-
 
 const promptForEmail = () => {
   if (Platform.OS === "ios") {
@@ -98,7 +113,6 @@ const promptForEmail = () => {
 };
 
 export default function OAuth() {
-
   return (
     <View style={styles.container}>
       <Button
@@ -117,7 +131,6 @@ export default function OAuth() {
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
