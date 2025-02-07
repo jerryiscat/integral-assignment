@@ -1,9 +1,9 @@
-// src/components/MagicLinkLogin.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, StyleSheet, View, Text, Platform } from 'react-native';
 import { supabase } from '../../../lib/supabase';
 import { Button } from '@rneui/themed';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native'; // Correct navigation hook
 
 interface MagicLinkLoginProps {
   buttonTitle?: string;
@@ -12,17 +12,21 @@ interface MagicLinkLoginProps {
 export default function MagicLinkLogin({ buttonTitle = "Login with Email" }: MagicLinkLoginProps) {
   const [loading, setLoading] = useState(false);
   const [linkSent, setLinkSent] = useState(false);
+  const navigation = useNavigation(); 
 
-  // Function to send a magic link using the provided email
   const sendMagicLinkWithEmail = async (email: string) => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
       email,
+      options: {
+        emailRedirectTo: 'com.myapp://post', 
+      },
     });
     if (error) {
       Alert.alert('Error', error.message);
     } else {
       setLinkSent(true);
+      Alert.alert("Success", "Check your email for the magic link!");
     }
     setLoading(false);
   };
@@ -54,18 +58,14 @@ export default function MagicLinkLogin({ buttonTitle = "Login with Email" }: Mag
 
   return (
     <View style={styles.container}>
-      {!linkSent ? (
         <Button
-          title={buttonTitle}
+          title="Login with Email"
           disabled={loading}
           onPress={promptForEmail}
           icon={
             <Ionicons name="mail" size={20} color="white" style={styles.icon} />
           }
         />
-      ) : (
-        <Text style={styles.successText}>Check your email for the magic link!</Text>
-      )}
     </View>
   );
 }

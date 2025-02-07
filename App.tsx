@@ -1,14 +1,23 @@
-// App.tsx
-
 import 'react-native-url-polyfill/auto';
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { Linking } from 'react-native';
 import LoginScreen from './src/screens/Login';
 import PostScreen from './src/screens/Post';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 
 const Stack = createStackNavigator();
+
+const linking = {
+  prefixes: ['com.myapp://'], 
+  config: {
+    screens: {
+      Login: '',
+      Post: 'post',
+    },
+  },
+};
 
 function AuthNavigator() {
   const { user, checkAuth } = useAuth();
@@ -30,7 +39,7 @@ function AuthNavigator() {
 
 export default function App() {
   return (
-    <AuthProvider>
+    <AuthProvider linking={linking}>
       <NavigationContainer>
         <AuthNavigator />
       </NavigationContainer>

@@ -1,50 +1,47 @@
-// src/components/GoogleLogin.tsx
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
-import { Button } from '@rneui/themed';
 import { supabase } from '../../../lib/supabase';
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
+import { Button } from '@rneui/themed';
 import { Ionicons } from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
+import * as AuthSession from 'expo-auth-session';
 
-WebBrowser.maybeCompleteAuthSession();
+WebBrowser.maybeCompleteAuthSession(); // Ensures the auth session closes properly
 
-interface GoogleLoginProps {
-  buttonTitle?: string;
-}
+const GOOGLE_CLIENT_ID = "1037736986312-rrgsb8846u6v4a35jomdqat7dmjnvvsl.apps.googleusercontent.com"; 
 
+export default function GoogleLogin() {
+  const [loading, setLoading] = useState(false);
 
-export default function GoogleLogin({ buttonTitle = "Login with Gmail" }: GoogleLoginProps) {
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: 'your-android-client-id.apps.googleusercontent.com',
-    iosClientId: 'your-ios-client-id.apps.googleusercontent.com',
-    expoClientId: 'your-expo-client-id.apps.googleusercontent.com',
-  });
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
 
-  async function signInWithGoogle(buttonTitle) {
-    if (response?.type === 'success') {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { access_token: response.params.access_token },
+    try {
+      const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: redirectUri },
       });
 
       if (error) {
-        Alert.alert('Google Login Failed', error.message);
+        Alert.alert("Login Failed", error.message);
+      } else {
+        await WebBrowser.openBrowserAsync(data.url);
       }
+    } catch (err) {
+      Alert.alert("Google Login Error", err.message);
+    } finally {
+      setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    if (response?.type === 'success') {
-      signInWithGoogle();
-    }
-  }, [response]);
+  };
 
   return (
     <View style={styles.container}>
       <Button
-        title= {buttonTitle}
-        onPress={() => promptAsync()}
+        title="Login with Google"
+        disabled={loading}
+        onPress={handleGoogleSignIn}
         icon={<Ionicons name="logo-google" size={20} color="white" style={styles.icon} />}
       />
     </View>
@@ -53,7 +50,7 @@ export default function GoogleLogin({ buttonTitle = "Login with Gmail" }: Google
 
 const styles = StyleSheet.create({
   container: {
-    padding: 12,
+    marginVertical: 10,
   },
   icon: {
     marginRight: 10,

@@ -4,7 +4,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import Header from '../components/common/Header';
 import EmailPasswordLogin from '../components/auth/EmailPasswordLogin';
 import MagicLinkLogin from '../components/auth/MagicLinkLogin';
-import GoogleLogin from '../components/auth/GoogleLogin';
+// import GoogleLogin from '../components/auth/GoogleLogin';
 import { Linking } from 'react-native';
 
 export default function LoginScreen() {
@@ -22,8 +22,8 @@ export default function LoginScreen() {
           </TouchableOpacity>
           <View style={styles.alternativeContainer}>
             <Text style={styles.altTitle}>Or use another login method:</Text>
-            <MagicLinkLogin buttonTitle="Login with Email" />
-            <GoogleLogin buttonTitle="Login with Google" />
+            <MagicLinkLogin />
+            {/* <GoogleLogin /> */}
           </View>
         </>
       )}
@@ -36,8 +36,8 @@ export default function LoginScreen() {
           </TouchableOpacity>
           <View style={styles.alternativeContainer}>
             <Text style={styles.altTitle}>Or use another login method:</Text>
-            <MagicLinkLogin buttonTitle="Login with Email" />
-            <GoogleLogin buttonTitle="Login with Google" />
+            <MagicLinkLogin />
+            {/* <GoogleLogin /> */}
           </View>
           
         </>

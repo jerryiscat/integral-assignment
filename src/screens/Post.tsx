@@ -18,11 +18,12 @@ export default function PostScreen({ }) {
     <View style={styles.container}>
       <Header title="Post" showBackButton={false} />
 
-      <View style={styles.logoutContainer}>
-        {user && <Text style={styles.userText}>Logged in as: {user.email}</Text>}
+      {user && <View style={styles.logoutContainer}>
+        <Text style={styles.userText}> Username: {user.user_metadata.username}</Text>
+        <Text style={styles.userText}> Email: {user.email}</Text>
         <Button title="Logout" onPress={handleLogout} color="#ff5c5c" />
-      </View>
-
+      </View>}
+      
       <View style={styles.messageContainer}>
         <MessageList />
       </View>
